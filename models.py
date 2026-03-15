@@ -9,7 +9,10 @@ class City(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True)
     additional_info = Column(String, nullable=True)
+    latitude = Column(Float)
+    longitude = Column(Float)
     temperatures = relationship("Temperature", back_populates="city", cascade="all, delete")
+
 
 class Temperature(Base):
     __tablename__ = "temperatures"

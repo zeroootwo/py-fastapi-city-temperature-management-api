@@ -17,6 +17,8 @@ class Temperature(TemperatureBase):
 class CityBase(BaseModel):
     name: str = Field(..., min_length=1)
     additional_info: Optional[str] = None
+    latitude: float
+    longitude: float
 
 class CityCreate(CityBase):
     pass

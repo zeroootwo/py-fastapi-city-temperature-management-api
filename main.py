@@ -20,8 +20,10 @@ def get_db():
 
 @app.post("/cities/", response_model=schemas.City)
 def create_city(city: schemas.CityCreate, db: Session = Depends(get_db)):
+    db_city = db.query(models.City).filter(models.City.name == city.name).first()
+    if db_city:
+        raise HTTPException(status_code=400, detail="City already exists")
     return crud.create_city(db=db, city=city)
-
 
 @app.get("/cities/", response_model=list[schemas.City])
 def read_cities(db: Session = Depends(get_db)):
@@ -48,12 +50,11 @@ async def update_temperatures(db: Session = Depends(get_db)):
     cities = crud.get_cities(db)
     if not cities:
         raise HTTPException(status_code=400, detail="No cities in database")
-
     async with httpx.AsyncClient() as client:
         for city in cities:
             try:
-                res = await client.get(
-                    "https://api.open-meteo.com/v1/forecast?latitude=48.46&longitude=35.04&current_weather=true")
+                url = f"https://api.open-meteo.com/v1/forecast?latitude={city.latitude}&longitude={city.longitude}&current_weather=true"
+                res = await client.get(url)
                 res.raise_for_status()
                 temp = res.json()["current_weather"]["temperature"]
                 crud.create_temperature(db, city_id=city.id, temp=temp)
